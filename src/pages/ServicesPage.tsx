@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAuthStore } from '@/store/auth';
 import { api } from '@/lib/api-client';
 import type { DocumentRequest } from '@shared/types';
@@ -95,6 +95,9 @@ export function ServicesPage() {
               <FileText className="h-5 w-5 text-primary" />
               Request New Document
             </CardTitle>
+            <DialogDescription>
+              Please select the document type and provide the purpose for your official request.
+            </DialogDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleCreate} className="space-y-6">
@@ -241,6 +244,9 @@ export function ServicesPage() {
               <span className="capitalize">{selectedReq?.type.replace('-', ' ')} Request</span>
               <Badge variant="outline">{selectedReq?.status}</Badge>
             </DialogTitle>
+            <DialogDescription>
+              Detailed overview of the document request status and submitted verification info.
+            </DialogDescription>
           </DialogHeader>
           {selectedReq && (
             <div className="space-y-6 pt-4">

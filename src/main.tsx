@@ -18,6 +18,7 @@ import { DirectoryPage } from '@/pages/DirectoryPage'
 import { ServicesPage } from '@/pages/ServicesPage'
 import { AnnouncementsPage } from '@/pages/AnnouncementsPage'
 import { UsersPage } from '@/pages/UsersPage'
+import { ChatbaseWidget } from '@/components/ChatbaseWidget'
 import { AppLayout } from '@/components/layout/AppLayout'
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
@@ -60,6 +61,7 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
+      <ChatbaseWidget />
       <ErrorBoundary>
         <RouterProvider router={router} />
       </ErrorBoundary>

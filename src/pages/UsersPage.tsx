@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { api } from '@/lib/api-client';
 import type { User, UserRole } from '@shared/types';
@@ -73,6 +73,9 @@ export function UsersPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Resident Registration</DialogTitle>
+                <DialogDescription>
+                  Fill in the resident's details to add them to the official barangay registry.
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleRegister} className="space-y-4 pt-4">
                 <div className="space-y-2">

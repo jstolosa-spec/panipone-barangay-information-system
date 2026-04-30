@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { api } from '@/lib/api-client';
 import { useAuthStore } from '@/store/auth';
 import type { DirectoryPost } from '@shared/types';
@@ -80,6 +80,9 @@ export function DirectoryPage() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Create Community Listing</DialogTitle>
+                  <DialogDescription>
+                    Add your service, business, or skill to the public Panipuan directory.
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleAddListing} className="space-y-4 pt-4">
                   <div className="space-y-2">

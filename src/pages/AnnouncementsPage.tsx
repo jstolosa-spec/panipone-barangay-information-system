@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/store/auth';
@@ -62,6 +62,9 @@ export function AnnouncementsPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>New Announcement</DialogTitle>
+                <DialogDescription>
+                  Draft and publish a new announcement to be broadcasted to the community.
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handlePost} className="space-y-4 pt-4">
                 <div className="space-y-2">
