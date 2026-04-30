@@ -1,20 +1,65 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, PostEntity, RequestEntity, AnnouncementEntity } from "./entities";
-import { ok, bad, notFound, isStr } from './core-utils';
+import { ok, bad, notFound } from './core-utils';
 import type { User, DirectoryPost, DocumentRequest, Announcement } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-  // USERS
+  // STATS
+  app.get('/api/stats', async (c) => {
+    const [users, posts, requests] = await Promise.all([
+      UserEntity.list(c.env),
+      PostEntity.list(c.env),
+      RequestEntity.list(c.env)
+    ]);
+    const stats = {
+      totalUsers: users.items.length,
+      totalPosts: posts.items.length,
+      totalRequests: requests.items.length,
+      pendingRequests: requests.items.filter(r => r.status === 'pending').length,
+      approvedRequests: requests.items.filter(r => r.status === 'approved').length,
+      rejectedRequests: requests.items.filter(r => r.status === 'rejected').length,
+    };
+    return ok(c, stats);
+  });
+  // USERS MANAGEMENT
   app.get('/api/users', async (c) => {
     await UserEntity.ensureSeed(c.env);
+    const role = c.req.query('role');
     const page = await UserEntity.list(c.env);
+    if (role && role !== 'all') {
+      page.items = page.items.filter(u => u.role === role);
+    }
     return ok(c, page);
+  });
+  app.post('/api/users', async (c) => {
+    const data = await c.req.json() as Partial<User>;
+    if (!data.name || !data.role) return bad(c, 'Name and role required');
+    const newUser: User = {
+      id: crypto.randomUUID(),
+      name: data.name,
+      role: data.role,
+      email: data.email || '',
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`,
+    };
+    return ok(c, await UserEntity.create(c.env, newUser));
+  });
+  app.put('/api/users/:id', async (c) => {
+    const id = c.req.param('id');
+    const data = await c.req.json() as Partial<User>;
+    const entity = new UserEntity(c.env, id);
+    if (!await entity.exists()) return notFound(c);
+    await entity.patch(data);
+    return ok(c, await entity.getState());
+  });
+  app.delete('/api/users/:id', async (c) => {
+    const id = c.req.param('id');
+    const deleted = await UserEntity.delete(c.env, id);
+    return deleted ? ok(c, { id }) : notFound(c);
   });
   // ANNOUNCEMENTS
   app.get('/api/announcements', async (c) => {
     await AnnouncementEntity.ensureSeed(c.env);
     const list = await AnnouncementEntity.list(c.env);
-    // Sort by pinned then by date
     const sorted = [...list.items].sort((a, b) => {
       if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
       return b.createdAt - a.createdAt;
@@ -41,9 +86,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/posts', async (c) => {
     await PostEntity.ensureSeed(c.env);
     const category = c.req.query('category');
+    const ownerId = c.req.query('ownerId');
     const page = await PostEntity.list(c.env);
     if (category && category !== 'all') {
       page.items = page.items.filter(p => p.category === category);
+    }
+    if (ownerId) {
+      page.items = page.items.filter(p => p.ownerId === ownerId);
     }
     return ok(c, page);
   });
@@ -67,10 +116,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await RequestEntity.ensureSeed(c.env);
     const residentId = c.req.query('residentId');
     const page = await RequestEntity.list(c.env);
+    const sorted = [...page.items].sort((a, b) => b.createdAt - a.createdAt);
     if (residentId) {
-      page.items = page.items.filter(r => r.residentId === residentId);
+      return ok(c, { items: sorted.filter(r => r.residentId === residentId) });
     }
-    return ok(c, page);
+    return ok(c, { items: sorted });
   });
   app.post('/api/requests', async (c) => {
     const data = await c.req.json() as Partial<DocumentRequest>;
