@@ -26,7 +26,7 @@ export interface DocumentRequest {
   id: string;
   residentId: string;
   residentName: string;
-  type: 'clearance' | 'certificate' | 'indigency' | 'permit';
+  type: 'clearance' | 'certificate' | 'indigency' | 'permit' | 'residency';
   status: 'pending' | 'processing' | 'approved' | 'rejected';
   purpose: string;
   attachments: string[]; // Mocked as metadata string URLs
@@ -43,4 +43,12 @@ export interface Announcement {
   isPinned: boolean;
   isPublic: boolean;
   createdAt: number;
+}
+export interface DashboardStats {
+  totalUsers: number;
+  totalPosts: number;
+  totalRequests: number;
+  pendingRequests: number;
+  approvedRequests: number;
+  rejectedRequests: number;
 }

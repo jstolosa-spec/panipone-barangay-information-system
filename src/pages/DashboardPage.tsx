@@ -1,6 +1,6 @@
 import React from 'react';
-import { 
-  FileText, Clock, CheckCircle2, AlertCircle, 
+import {
+  FileText, Clock, CheckCircle2, AlertCircle,
   TrendingUp, Users as UsersIcon, Bell, ArrowRight,
   ShieldCheck, FilePlus, BookUser
 } from 'lucide-react';
@@ -11,15 +11,22 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { api } from '@/lib/api-client';
+import type { DashboardStats } from '@shared/types';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
+const COLOR_MAPS = {
+  blue: { bg: 'bg-blue-100', text: 'text-blue-600', primary: '#3b82f6' },
+  amber: { bg: 'bg-amber-100', text: 'text-amber-600', primary: '#f59e0b' },
+  green: { bg: 'bg-green-100', text: 'text-green-600', primary: '#10b981' },
+  purple: { bg: 'bg-purple-100', text: 'text-purple-600', primary: '#8b5cf6' },
+};
 export function DashboardPage() {
   const currentUser = useAuthStore(s => s.currentUser);
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
     queryKey: ['stats'],
-    queryFn: () => api<any>('/api/stats'),
+    queryFn: () => api<DashboardStats>('/api/stats'),
   });
   if (!currentUser) return null;
   const isAdminOrStaff = ['admin', 'captain', 'secretary'].includes(currentUser.role);
@@ -35,7 +42,7 @@ export function DashboardPage() {
     { name: 'Pending', value: stats?.pendingRequests || 20 },
     { name: 'Rejected', value: stats?.rejectedRequests || 10 },
   ];
-  const COLORS = ['#2563eb', '#f59e0b', '#ef4444'];
+  const PIE_COLORS = [COLOR_MAPS.blue.primary, COLOR_MAPS.amber.primary, '#ef4444'];
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
@@ -44,8 +51,14 @@ export function DashboardPage() {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1 }
   };
+  const statItems = [
+    { label: 'Total Requests', val: stats?.totalRequests ?? '-', icon: FileText, color: 'blue' as const },
+    { label: 'Pending Docs', val: stats?.pendingRequests ?? '-', icon: Clock, color: 'amber' as const },
+    { label: 'Approved', val: stats?.approvedRequests ?? '-', icon: CheckCircle2, color: 'green' as const },
+    { label: 'Directory', val: stats?.totalPosts ?? '-', icon: BookUser, color: 'purple' as const },
+  ];
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -56,27 +69,24 @@ export function DashboardPage() {
           <h1 className="text-3xl font-bold tracking-tight">Welcome, {currentUser.name}</h1>
           <p className="text-muted-foreground">Overview for Barangay Panipuan Digital Portal.</p>
         </div>
-        <div className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full uppercase tracking-widest">
+        <div className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full uppercase tracking-widest border border-primary/20">
           Role: {currentUser.role}
         </div>
       </div>
-      {/* Quick Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { label: 'Total Requests', val: stats?.totalRequests ?? '-', icon: FileText, color: 'blue' },
-          { label: 'Pending Docs', val: stats?.pendingRequests ?? '-', icon: Clock, color: 'amber' },
-          { label: 'Approved', val: stats?.approvedRequests ?? '-', icon: CheckCircle2, color: 'green' },
-          { label: 'Directory', val: stats?.totalPosts ?? '-', icon: BookUser, color: 'purple' },
-        ].map((item, idx) => (
+        {statItems.map((item, idx) => (
           <motion.div key={idx} variants={itemVariants}>
-            <Card className="hover-card-blue h-full">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center bg-${item.color}-100`}>
-                  <item.icon className={`h-6 w-6 text-${item.color}-600`} />
+            <Card className="hover-card-blue h-full border-none shadow-soft overflow-hidden group">
+              <CardContent className="p-6 flex items-center gap-4 relative">
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center transition-colors ${COLOR_MAPS[item.color].bg}`}>
+                  <item.icon className={`h-6 w-6 ${COLOR_MAPS[item.color].text}`} />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{item.label}</p>
-                  <p className="text-2xl font-bold">{item.val}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{item.label}</p>
+                  <p className="text-2xl font-bold">{statsLoading ? '...' : item.val}</p>
+                </div>
+                <div className="absolute -right-2 -bottom-2 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
+                  <item.icon className="h-16 w-16" />
                 </div>
               </CardContent>
             </Card>
@@ -84,9 +94,8 @@ export function DashboardPage() {
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Chart */}
-        <motion.div variants={itemVariants} className="lg:col-span-2 h-full">
-          <Card className="h-full">
+        <motion.div variants={itemVariants} className="lg:col-span-2">
+          <Card className="h-full shadow-soft border-none">
             <CardHeader className="pb-0">
               <CardTitle className="text-lg flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-blue-600" />
@@ -97,24 +106,23 @@ export function DashboardPage() {
               <div className="h-[320px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} dx={-10} />
-                    <Tooltip 
-                      cursor={{fill: '#f3f4f6'}} 
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} dy={10} fontSize={12} stroke="#94a3b8" />
+                    <YAxis axisLine={false} tickLine={false} dx={-10} fontSize={12} stroke="#94a3b8" />
+                    <Tooltip
+                      cursor={{fill: '#f8fafc'}}
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                     />
-                    <Bar dataKey="requests" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={40} />
+                    <Bar dataKey="requests" fill={COLOR_MAPS.blue.primary} radius={[6, 6, 0, 0]} barSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
         </motion.div>
-        {/* Status Distribution & Quick Actions */}
         <div className="space-y-8">
           <motion.div variants={itemVariants}>
-            <Card>
+            <Card className="shadow-soft border-none">
               <CardHeader className="pb-0">
                 <CardTitle className="text-lg">Process Health</CardTitle>
               </CardHeader>
@@ -132,7 +140,7 @@ export function DashboardPage() {
                         dataKey="value"
                       >
                         {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
+                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} stroke="none" />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -143,10 +151,10 @@ export function DashboardPage() {
                   {pieData.map((item, i) => (
                     <div key={item.name} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full" style={{backgroundColor: COLORS[i]}} />
+                        <div className="h-2 w-2 rounded-full" style={{backgroundColor: PIE_COLORS[i]}} />
                         <span className="text-muted-foreground">{item.name}</span>
                       </div>
-                      <span className="font-bold">{item.value}</span>
+                      <span className="font-bold">{statsLoading ? '-' : item.value}</span>
                     </div>
                   ))}
                 </div>
@@ -154,7 +162,7 @@ export function DashboardPage() {
             </Card>
           </motion.div>
           <motion.div variants={itemVariants}>
-            <Card className="bg-primary text-primary-foreground overflow-hidden relative">
+            <Card className="bg-primary text-primary-foreground overflow-hidden relative shadow-lg shadow-primary/20 border-none">
               <div className="absolute top-0 right-0 p-4 opacity-10">
                 <ShieldCheck className="h-24 w-24" />
               </div>
@@ -164,19 +172,19 @@ export function DashboardPage() {
               <CardContent className="space-y-3 relative z-10">
                 {isAdminOrStaff ? (
                   <>
-                    <Button variant="secondary" className="w-full justify-start gap-2" asChild>
+                    <Button variant="secondary" className="w-full justify-start gap-2 hover:bg-white" asChild>
                       <Link to="/services"><Clock className="h-4 w-4" /> Review Pending</Link>
                     </Button>
-                    <Button variant="secondary" className="w-full justify-start gap-2" asChild>
+                    <Button variant="secondary" className="w-full justify-start gap-2 hover:bg-white" asChild>
                       <Link to="/users"><UsersIcon className="h-4 w-4" /> Manage Residents</Link>
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button variant="secondary" className="w-full justify-start gap-2" asChild>
+                    <Button variant="secondary" className="w-full justify-start gap-2 hover:bg-white" asChild>
                       <Link to="/services"><FilePlus className="h-4 w-4" /> Request Document</Link>
                     </Button>
-                    <Button variant="secondary" className="w-full justify-start gap-2" asChild>
+                    <Button variant="secondary" className="w-full justify-start gap-2 hover:bg-white" asChild>
                       <Link to="/directory"><BookUser className="h-4 w-4" /> Browse Directory</Link>
                     </Button>
                   </>
