@@ -1,6 +1,6 @@
 # Cloudflare Workers + React + shadcn/ui Template
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jstolosa-spec/panipone-barangay-information-system)
 
 A production-ready full-stack template for building scalable applications on Cloudflare Workers. Features a modern React frontend with shadcn/ui, Tailwind CSS, and a type-safe Durable Objects backend powered by Hono. Perfect for real-time apps, dashboards, and APIs.
 
@@ -134,7 +134,7 @@ wrangler deploy
 
 **Configuration**: `wrangler.jsonc` handles Durable Objects and assets.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jstolosa-spec/panipone-barangay-information-system)
 
 **Pro Tip**: Use Cloudflare's Git integration for CI/CD.
 
